@@ -1,4 +1,6 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const loadData_1 = require("./loadData");
 const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
@@ -8,3 +10,4 @@ mongoose.connect('mongodb://localhost/swift-data')
 app.use(express.json());
 app.listen(port, () => console.log('server started'));
 app.use(express.static('build'));
+(0, loadData_1.getData)();

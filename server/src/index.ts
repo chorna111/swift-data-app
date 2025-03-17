@@ -1,3 +1,6 @@
+
+import { getData } from "./loadData"
+
 const express=require('express')
 const app=express()
 const mongoose=require('mongoose')
@@ -11,3 +14,10 @@ app.use(express.json())
 app.listen(port,()=>console.log('server started'))
 
 app.use(express.static('build'))
+
+
+getData()
+
+
+
+
