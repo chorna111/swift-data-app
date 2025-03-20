@@ -9,11 +9,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getData = void 0;
+exports.getData = getData;
 const branch_1 = require("./models/branch");
 const fs = require('fs');
 const csv = require('csv-parser');
-const { headquarter } = require('./models/headquarter');
+const { Headquarter } = require('./models/headquarter');
 function getData() {
     return __awaiter(this, void 0, void 0, function* () {
         return new Promise((resolve, reject) => {
@@ -24,7 +24,12 @@ function getData() {
                 .on('data', (row) => __awaiter(this, void 0, void 0, function* () {
                 try {
                     if (row['SWIFT CODE'] && row['SWIFT CODE'].endsWith('XXX')) {
-                        const h = new headquarter({
+                        const h = new Headquarter({
+                            address: row['ADDRESS'],
+                            bankName: row['NAME'],
+                            countryISO2: row['COUNTRY ISO2 CODE'],
+                            countryName: row['COUNTRY NAME'],
+                            isHeadquarter: true,
                             swiftCode: row['SWIFT CODE'],
                             branches: []
                         });
@@ -32,6 +37,11 @@ function getData() {
                     }
                     else {
                         const branch = new branch_1.Branch({
+                            address: row['ADDRESS'],
+                            bankName: row['NAME'],
+                            countryISO2: row['COUNTRY ISO2 CODE'],
+                            countryName: row['COUNTRY NAME'],
+                            isHeadquarter: false,
                             swiftCode: row['SWIFT CODE'],
                         });
                         branches.push(branch);
@@ -50,7 +60,7 @@ function getData() {
                     }
                     for (const branch of branches) {
                         yield branch.save();
-                        const h = yield headquarter.findOne({
+                        const h = yield Headquarter.findOne({
                             swiftCode: ((_a = branch.swiftCode) === null || _a === void 0 ? void 0 : _a.slice(0, 8)) + "XXX"
                         });
                         if (h) {
@@ -72,4 +82,3 @@ function getData() {
         });
     });
 }
-exports.getData = getData;

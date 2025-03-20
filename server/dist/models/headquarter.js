@@ -4,24 +4,33 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
+const joi_1 = __importDefault(require("joi"));
 const headquarterSchema = new mongoose_1.default.Schema({
     address: {
-        type: String
+        type: String,
+        required: true
     },
     bankName: {
         type: String,
+        required: true
     },
     countryISO2: {
-        type: String
+        type: String,
+        required: true,
+        length: 2
     },
     countryName: {
-        type: String
+        type: String,
+        required: true,
     },
     isHeadquarter: {
-        type: Boolean
+        type: Boolean,
+        required: true
     },
     swiftCode: {
-        type: String
+        type: String,
+        required: true,
+        length: 11,
     },
     branches: [{
             type: mongoose_1.default.Schema.Types.ObjectId,
@@ -29,5 +38,17 @@ const headquarterSchema = new mongoose_1.default.Schema({
         }]
 });
 const Headquarter = mongoose_1.default.model('Headquarter', headquarterSchema);
+function validate(headquarter) {
+    const schema = joi_1.default.object({
+        address: joi_1.default.string().required(),
+        bankName: joi_1.default.string().required(),
+        countryISO2: joi_1.default.string().required(),
+        countryName: joi_1.default.string().required(),
+        isHeadquarter: joi_1.default.bool().required(),
+        swiftCode: joi_1.default.string().length(11).required()
+    });
+    return schema.validate(headquarter);
+}
+module.exports.validate = validate;
 module.exports.headquarterSchema = headquarterSchema;
-module.exports.headquarter = Headquarter;
+module.exports.Headquarter = Headquarter;

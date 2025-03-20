@@ -3,7 +3,7 @@ import { Branch } from "./models/branch";
 
 const fs=require('fs')
 const csv=require('csv-parser')
-const {headquarter}=require('./models/headquarter')
+const {Headquarter}=require('./models/headquarter')
 
 
 
@@ -18,16 +18,28 @@ export async function getData() {
       .on('data', async (row: any) => {
         try {
           if (row['SWIFT CODE'] && row['SWIFT CODE'].endsWith('XXX')) {
+            
            
-            const h = new headquarter({
-              
+            const h = new Headquarter({
+              address:row['ADDRESS'],
+              bankName:row['NAME'],
+              countryISO2:row['COUNTRY ISO2 CODE'],
+              countryName:row['COUNTRY NAME'],
+              isHeadquarter:true,
               swiftCode: row['SWIFT CODE'],
+        
+            
               branches: [] 
             });
 
             headquarters.push(h); 
           } else {
             const branch = new Branch({
+              address:row['ADDRESS'],
+              bankName:row['NAME'],
+              countryISO2:row['COUNTRY ISO2 CODE'],
+              countryName:row['COUNTRY NAME'],
+              isHeadquarter:false,
               swiftCode: row['SWIFT CODE'],
             });
 
@@ -47,7 +59,7 @@ export async function getData() {
         
           for (const branch of branches) {
             await branch.save();
-            const h = await headquarter.findOne({
+            const h = await Headquarter.findOne({
               swiftCode: branch.swiftCode?.slice(0, 8) + "XXX"
             });
 
@@ -61,6 +73,7 @@ export async function getData() {
           }
 
           console.log('CSV file successfully processed');
+          
           resolve();
         } catch (error) {
           reject(error);
