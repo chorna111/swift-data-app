@@ -32,17 +32,6 @@ mongoose.connection.on('connected', async function () {
     }
 });
 
-
-
-//getData()
-app.get('/load-data',async (req:any,res:any)=>{
-    try{
-        await getData()
-        res.json({status:'success'})
-    }catch(error){
-        res.status(500).json({ status: "error", message: "Błąd ładowania danych" });
-    }
-})
 app.get('/v1/swift-codes/:swiftcode',async(req:any,res:any)=>{
     try{
     const headquarter=await Headquarter.findOne({swiftCode:req.params.swiftcode})
