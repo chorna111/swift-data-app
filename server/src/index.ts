@@ -3,6 +3,7 @@ import { getData } from "./loadData"
 const {Headquarter,validate}=require('./models/headquarter')
 const {Branch}=require('./models/branch')
 const express=require('express')
+
 const config=require('../config.js')
 const app=express()
 const mongoose=require('mongoose')
@@ -13,7 +14,9 @@ mongoose.connect(config.db_uri)
 
 
 app.use(express.json())
-app.listen(port,()=>console.log('server started'))
+
+const server= app.listen(port, () => console.log('server started'));
+
 mongoose.connection.on('connected', async function () {
     try {
         const headquarterCount = await Headquarter.countDocuments();
@@ -24,9 +27,7 @@ mongoose.connection.on('connected', async function () {
 
             await getData();
             console.log('Data is loaded');
-        } else {
-            console.log('Data is loaded');
-        }
+        } 
     } catch (error) {
         console.error(error);
     }
@@ -34,18 +35,21 @@ mongoose.connection.on('connected', async function () {
 
 app.get('/v1/swift-codes/:swiftcode',async(req:any,res:any)=>{
     try{
-    const headquarter=await Headquarter.findOne({swiftCode:req.params.swiftcode})
-        .select('-_id')
-        .populate('branches','address bankName countryISO2 isHeadquarter swiftCode -_id')
-    if(headquarter){
-        return res.status(200).send(headquarter)
-    }else{
-        const branch=await Branch.findOne({swiftCode:req.params.swiftcode})
-        if(branch) return res.status(200).send(branch)
+        if(req.params.swiftcode.length!==11||typeof req.params.swiftcode!=='string'){
+            res.status(400).send('you should provide a string with 11 characters')
+        }
+        const headquarter=await Headquarter.findOne({swiftCode:req.params.swiftcode})
+            .select('-_id')
+            .populate('branches','address bankName countryISO2 isHeadquarter swiftCode -_id')
+        if(headquarter){
+            return res.status(200).send(headquarter)
+        }else{
+            const branch=await Branch.findOne({swiftCode:req.params.swiftcode})
+            if(branch) return res.status(200).send(branch)
 
-    }
+        }
     }catch(err){
-        res.status(500).send('getting data failed,ensure swift code is correct')
+        res.status(500).send('smth went wrong on server')
     }
 
     
@@ -101,21 +105,8 @@ app.post('/v1/swift-codes',async(req:any,res:any)=>{
         try{
 
         
-        if(req.body.isHeadquarter==true){
-            let n=new Headquarter({
-            address: req.body.address,
-            bankName: req.body.bankName,
-            countryISO2: req.body.countryISO2,
-            countryName: req.body.countryName,
-            isHeadquarter:req.body.isHeadquarter,
-            swiftCode: req.body.swiftCode,
-            
-
-            })
-            n=await n.save()
-            res.send("Headquarter successfully added")
-        }else{
-            let b=new Branch({
+            if(req.body.isHeadquarter==true){
+                let n=new Headquarter({
                 address: req.body.address,
                 bankName: req.body.bankName,
                 countryISO2: req.body.countryISO2,
@@ -123,18 +114,31 @@ app.post('/v1/swift-codes',async(req:any,res:any)=>{
                 isHeadquarter:req.body.isHeadquarter,
                 swiftCode: req.body.swiftCode,
                 
-    
-                })
-                b=await b.save()
-                res.send("Branch successfully added")
 
+                })
+                n=await n.save()
+                res.status(201).send("Headquarter successfully added")
+            }else{
+                let b=new Branch({
+                    address: req.body.address,
+                    bankName: req.body.bankName,
+                    countryISO2: req.body.countryISO2,
+                    countryName: req.body.countryName,
+                    isHeadquarter:req.body.isHeadquarter,
+                    swiftCode: req.body.swiftCode,
+                    
+        
+                    })
+                    b=await b.save()
+                    res.status(201).send("Branch successfully added")
+
+
+            }
+            
+        }catch(err){
+            res.status(500).send('getting data failed,ensure isowcode is correct')
 
         }
-        
-    }catch(err){
-        console.log(err)
-
-    }
 }
 
 
@@ -142,7 +146,7 @@ app.post('/v1/swift-codes',async(req:any,res:any)=>{
 
 app.delete('/v1/swift-codes/:swiftcode',async(req:any,res:any)=>{
     if(!(req.params.swiftcode.length===11&&typeof req.params.swiftcode==='string')){
-        res.send('code you provided is incorrect')
+        res.status(400).send('code you provided is incorrect')
     }
     try{
         const deletedHeadquarter=await Headquarter.findOneAndDelete({swiftCode:req.params.swiftcode})
@@ -151,9 +155,9 @@ app.delete('/v1/swift-codes/:swiftcode',async(req:any,res:any)=>{
         }else{
             const deletedBranch=await Branch.findOneAndDelete({swiftCode:req.params.swiftcode})
             if(deletedBranch){
-                res.send('Branch deleted successfully')
+                res.status(200).send('Branch deleted successfully')
             }else{
-                res.send('oops, something went wrong, probably swift code was already deleted')
+                res.status(400).send('oops, something went wrong, probably swift code was already deleted')
             }
         }
         
@@ -168,3 +172,4 @@ app.delete('/v1/swift-codes/:swiftcode',async(req:any,res:any)=>{
 
 
 
+export { app, server };
