@@ -11,7 +11,7 @@ docker compose build
 docker compose run --rm app npx jest --watchAll
 ```
 - wait for tests to run
-### Running the PAPI in normaal mode
+### Running the API in normaal mode
 - if you want to start API in normal mode, run the following command:
 ```sh
 docker compose up
