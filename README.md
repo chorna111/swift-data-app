@@ -1,16 +1,16 @@
 # Swift codes API app
 ## Instructions for setting up and running
-- install Docker on your machine and run it
+- install Docker on your machine and ensure it's running
 - run the following command to build the application:
 ```sh
 docker compose build
 ```
 ### Running tests
-- to run tests run the following command:
+- to run tests use the following command:
 ```sh
 docker compose run --rm app npx jest --watchAll
 ```
-- wait for tests to run
+- wait for tests to complete
 ### Running the API in normaal mode
 - if you want to start API in normal mode, run the following command:
 ```sh
