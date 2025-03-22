@@ -6,11 +6,7 @@ services:
     restart: always
     volumes:
       - mongo_db:/data/db
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh mongodb://localhost:27017 --quiet
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    
 
   app:
     build: .
@@ -22,8 +18,9 @@ services:
       DB_URI: mongodb://mongo_db:27017/swift-data
       TEST_PORT: 8082
     depends_on:
-      mongo_db:
-        condition: service_healthy
+       - mongo_db
+ 
+    
 
 volumes:
   mongo_db: {}

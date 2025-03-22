@@ -44,7 +44,7 @@ const Headquarter=mongoose.model('Headquarter',headquarterSchema)
 
 function validate(headquarter:any){
     const schema=Joi.object({
-        address:Joi.string().required(),
+        
         bankName:Joi.string().required(),
         
         countryISO2:Joi.string().required(),
@@ -52,7 +52,8 @@ function validate(headquarter:any){
         countryName:Joi.string().required(),
         
         isHeadquarter:Joi.bool().required(),
-        swiftCode:Joi.string().length(11).required()
+        swiftCode:Joi.string().length(11).required(),
+        address:Joi.string().required(),
         
 
     })

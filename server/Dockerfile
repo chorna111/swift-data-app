@@ -15,5 +15,6 @@ COPY ./data.csv ./
 
 COPY ./config.js ./
 RUN npm install
+RUN npx tsc
 CMD ["npm", "start"]
 

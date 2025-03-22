@@ -1,4 +1,5 @@
 
+import { errorMonitor } from "events"
 import { getData } from "./loadData"
 const {Headquarter,validate}=require('./models/headquarter')
 const {Branch}=require('./models/branch')
@@ -37,7 +38,7 @@ mongoose.connection.on('connected', async function () {
 app.get('/v1/swift-codes/:swiftcode',async(req:any,res:any)=>{
     try{
         if(req.params.swiftcode.length!==11||typeof req.params.swiftcode!=='string'){
-            res.status(400).send('you should provide a string with 11 characters')
+            res.status(400).send('you must enter a string that consists of 11 characters')
         }
         const headquarter=await Headquarter.findOne({swiftCode:req.params.swiftcode})
             .select('-_id')
@@ -46,11 +47,15 @@ app.get('/v1/swift-codes/:swiftcode',async(req:any,res:any)=>{
             return res.status(200).send(headquarter)
         }else{
             const branch=await Branch.findOne({swiftCode:req.params.swiftcode})
-            if(branch) return res.status(200).send(branch)
+            if(branch){
+                return res.status(200).send(branch)
+            }else{
+                return res.status(404).send('swiftcode not found')
+            }
 
         }
     }catch(err){
-        res.status(500).send('smth went wrong on server')
+        console.log(err)
     }
 
     
@@ -58,52 +63,62 @@ app.get('/v1/swift-codes/:swiftcode',async(req:any,res:any)=>{
     
 })
 
-app.get('/v1/swift-codes/country/:countryISO2code',async(req:any,res:any)=>{
-    
-    try{
-   
-    const headquarters=await Headquarter.find({countryISO2:req.params.countryISO2code})
-    const branches = await Branch.find({ countryISO2: req.params.countryISO2code });
-    const countryName=headquarters[0].countryName
-
-    const codes=[
-    
-        ...headquarters.map((h:typeof Headquarter)=>({
-            address: h.address,
-            bankName: h.bankName,
-            countryISO2:h.countryISO2,
-            isHeadquarter:h.isHeadquarter,
-            swiftCode:h.swiftCode
-    })),
-        ...branches.map((b:typeof Branch)=>({
-            address:b.address,
-            bankName:b.bankName,
-            countryISO2:b.countryISO2,
-            isHeadquarter:b.isHeadquarter,
-            swiftCode:b.swiftCode
-        }))]
+app.get('/v1/swift-codes/country/:countryISO2code', async (req: any, res: any) => {
+    try {
+        const countryISO2code = req.params.countryISO2code
         
-    const result={
-        countryISO2:req.params.countryISO2code,
-        countryName:countryName,
-        swiftCodes:codes
-    }
-    return res.status(200).send(result)
+        if (typeof countryISO2code !== 'string' || countryISO2code.length !== 2) {
+           res.status(400).send('you must enter a string that consists of 2 characters');
+        }
 
-}catch(err){
-    res.status(500).send('getting data failed,ensure isowcode is correct')
-}
-}
-)
+        const headquarters = await Headquarter.find({ countryISO2: countryISO2code });
+        const branches = await Branch.find({ countryISO2: countryISO2code });
+
+        if (headquarters.length === 0) {
+            res.status(404).send('not found in database');
+        }
+
+        const countryName = headquarters[0].countryName
+
+        const codes = [
+            ...headquarters.map((h: typeof Headquarter) => ({
+                address: h.address,
+                bankName: h.bankName,
+                countryISO2: h.countryISO2,
+                isHeadquarter: h.isHeadquarter,
+                swiftCode: h.swiftCode
+            })),
+            ...branches.map((b: typeof Branch) => ({
+                address: b.address,
+                bankName: b.bankName,
+                countryISO2: b.countryISO2,
+                isHeadquarter: b.isHeadquarter,
+                swiftCode: b.swiftCode
+            }))
+        ];
+
+        return res.status(200).json({
+            countryISO2: countryISO2code,
+            countryName,
+            swiftCodes: codes
+        });
+
+    } catch (err) {
+        console.log(err)
+    }
+});
+
+    
 
 app.post('/v1/swift-codes',async(req:any,res:any)=>{
-    const {error}=validate(req.body)
-    if(error) return res.status(400).send(error.details[0].message)
-    const code=await Headquarter.findOne({swiftCode:req.body.swiftCode})
-    if(code) {
-        return res.send('this code already exists')
-    }else{
-        try{
+    try{
+        const {error}=validate(req.body)
+        if(error) return res.status(400).send(error.details[0].message)
+        const code=await Headquarter.findOne({swiftCode:req.body.swiftCode})
+        if(code) {
+            return res.send('this code already exists')
+        }else{
+            
 
         
             if(req.body.isHeadquarter==true){
@@ -134,20 +149,16 @@ app.post('/v1/swift-codes',async(req:any,res:any)=>{
                     res.status(201).send("Branch successfully added")
 
 
-            }
-            
-        }catch(err){
-            res.status(500).send('getting data failed,ensure isowcode is correct')
+            }}
 
-        }
-}
-
-
+    }catch(err){
+        console.log(err)
+    }
 })
 
 app.delete('/v1/swift-codes/:swiftcode',async(req:any,res:any)=>{
     if(!(req.params.swiftcode.length===11&&typeof req.params.swiftcode==='string')){
-        res.status(400).send('code you provided is incorrect')
+        return res.status(400).send('code you provided is incorrect')
     }
     try{
         const deletedHeadquarter=await Headquarter.findOneAndDelete({swiftCode:req.params.swiftcode})
@@ -158,7 +169,7 @@ app.delete('/v1/swift-codes/:swiftcode',async(req:any,res:any)=>{
             if(deletedBranch){
                 res.status(200).send('Branch deleted successfully')
             }else{
-                res.status(400).send('oops, something went wrong, probably swift code was already deleted')
+                res.status(400).send('something went wrong, probably swift code was already deleted')
             }
         }
         
