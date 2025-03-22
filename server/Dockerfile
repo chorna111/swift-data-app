@@ -6,7 +6,7 @@ COPY ./jest.config.js ./
 COPY ./tsconfig.json ./
 COPY ./.env ./
 COPY ./src ./src
-COPY ./dist ./dist
+
 
 
 

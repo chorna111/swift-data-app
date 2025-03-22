@@ -2,11 +2,12 @@ import mongoose  from 'mongoose';
 import request from 'supertest';
 import { app } from '../index';
 import { getData } from '../loadData';
-
-
+import { Headquarter } from '../models/headquarter';
+import { Branch } from '../models/branch';
 jest.setTimeout(60000);
 beforeAll(async () => {
   await getData()
+
   
 });
 describe('GET /v1/swift-codes/:swiftcode', () => {
@@ -88,10 +89,46 @@ describe('POST /v1/swift-codes', () => {
             "countryISO2": "PL",
             "countryName": "Poland",
             "isHeadquarter": true,
-            "swiftCode": "123xxxxxXXX"
+            "swiftCode": "aaaxxxxxXXX"
             
           });
           expect(response.statusCode).toBe(201);
+      });
+    });
+    describe('provided headquarter already exists', () => {
+      test('status code should be 400', async () => {
+        const response = await request(app)
+          .post('/v1/swift-codes')
+          .send({ 
+            "address": "JAMES BOURCHIER BLVD 76A HILL TOWER SOFIA, SOFIA, 1421",
+           
+            "bankName": "ADAMANT CAPITAL PARTNERS AD",
+            "countryISO2": "BG",
+            "countryName": "Bulgaria",
+            "isHeadquarter": true,
+            "swiftCode":  "ADCRBGS1XXX"
+            
+          });
+          expect(response.statusCode).toBe(400);
+      });
+    });
+
+
+    describe('provided branch already exists', () => {
+      test('status code should be 400', async () => {
+        const response = await request(app)
+          .post('/v1/swift-codes')
+          .send({ 
+            "address": "PLAC TEATRALNY 4  - BYDGOSZCZ KUJAWSKO-POMORSKIE, 85-950 ",
+           
+            "bankName": "PKO BANK POLSKI S.A.",
+            "countryISO2": "PL",
+            "countryName": "POLAND",
+            "isHeadquarter": false,
+            "swiftCode":  "BPKOPLPWTOB"
+            
+          });
+          expect(response.statusCode).toBe(400);
       });
     });
  });
@@ -113,6 +150,8 @@ describe('DELETE /v1/swift-codes/:swiftcode',()=>{
 })
 
 afterAll(async () => {
+  await Headquarter.deleteMany({});
+  await Branch.deleteMany({})
   await mongoose.connection.close();
 });
 

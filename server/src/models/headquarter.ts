@@ -40,7 +40,7 @@ const headquarterSchema=new mongoose.Schema({
         ref:'Branch'
     }]
 })
-const Headquarter=mongoose.model('Headquarter',headquarterSchema)
+export const Headquarter=mongoose.model('Headquarter',headquarterSchema)
 
 function validate(headquarter:any){
     const schema=Joi.object({
@@ -61,4 +61,4 @@ function validate(headquarter:any){
 }
 module.exports.validate = validate;
 module.exports.headquarterSchema = headquarterSchema
-module.exports.Headquarter = Headquarter
+

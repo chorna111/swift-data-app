@@ -114,9 +114,10 @@ app.post('/v1/swift-codes',async(req:any,res:any)=>{
     try{
         const {error}=validate(req.body)
         if(error) return res.status(400).send(error.details[0].message)
-        const code=await Headquarter.findOne({swiftCode:req.body.swiftCode})
-        if(code) {
-            return res.send('this code already exists')
+        const headquarterExists=await Headquarter.findOne({swiftCode:req.body.swiftCode})
+        const branchExists=await Branch.findOne({swiftCode:req.body.swiftCode})
+        if(headquarterExists||branchExists) {
+            return res.status(400).send('this code already exists')
         }else{
             
 
