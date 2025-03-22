@@ -25,8 +25,9 @@ mongoose.connection.on('connected', async function () {
         if (headquarterCount === 0 && branchCount === 0) {
             console.log('Loading data');
 
-            await getData();
-            console.log('Data is loaded');
+            await getData()
+                
+        ;
         } 
     } catch (error) {
         console.error(error);
