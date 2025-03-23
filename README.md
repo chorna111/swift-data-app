@@ -1,7 +1,7 @@
 # Swift codes API app
 ## Instructions for setting up and running
 - install Docker on your machine and ensure it's running
-- run the following command to build the application:
+- navigate to the server directory and run the following command to build the application:
 ```sh
 docker compose build
 ```
